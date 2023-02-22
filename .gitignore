@@ -9,7 +9,7 @@
 *.tar.gz
 *.tar.xz
 *.tar.bz2
-data/*.wav
+*.wav
 
 # Prerequisites
 *.d
