@@ -26,14 +26,13 @@ for FILE in ./*.wav; do
     ARR_INFO=(${FILENAME//_/ })
     
     # Extract the emotion
-    ID=${ARR_INFO[0]}
-    ACTOR=${ARR_INFO[1]}
+    ACTOR=${ARR_INFO[0]}
+    WORD=${ARR_INFO[1]}
     EMOTION=$(emotion_to_str ${ARR_INFO[2]})
-    EXTENT=${ARR_INFO[3]}
 
     # Copy the file
     mkdir -p ./data/${EMOTION}
-    NEWFILE="./data/$EMOTION/${EMOTION}_${ACTOR}_${ID}_${DATASET_NAME}.${EXT}"
+    NEWFILE="./data/$EMOTION/${EMOTION}_${ACTOR}_${WORD}_${DATASET_NAME}.${EXT}"
     echo  "Saving to ${NEWFILE}"
     mv ${FILE} ${NEWFILE}
 done
