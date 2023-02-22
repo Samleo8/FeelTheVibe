@@ -2,11 +2,12 @@
 
 emotion_to_str(){
     case $1 in
-        "ANG") echo "anger";;
-        "DIS") echo "disgust";;
-        "FEA") echo "fear";;
-        "HAP") echo "happiness";;
-        "SAD") echo "sadness";;
+        "angry") echo "anger";;
+        "disgust") echo "disgust";;
+        "fear") echo "fear";;
+        "happy") echo "happiness";;
+        "sad") echo "sadness";;
+        "ps") echo "surprise";;
         *) echo "neutral";;
     esac
 }
