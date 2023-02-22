@@ -11,10 +11,12 @@ for EMOTION in "${EMOTIONS[@]}"; do
     mkdir -p combined/${EMOTION}
 
     for DATASET in "${DATASETS[@]}"; do
+        cp -r ${DATASET}/data/${EMOTION} combined/
+
         # Symlink the files
-        FILES=$(ls ./${DATASET}/data/${EMOTION})
-        for FILE in ${FILES}; do
-            ln -s ${DATASET}/data/${EMOTION}/${FILE} combined/${EMOTION}/
-        done
+        # FILES=$(ls ./${DATASET}/data/${EMOTION})
+        # for FILE in ${FILES}; do
+        #     cp ${DATASET}/data/${EMOTION}/${FILE} combined/${EMOTION}/
+        # done
     done
 done
