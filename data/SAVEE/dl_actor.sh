@@ -12,6 +12,7 @@ emotion_to_str(){
     esac
 }
 
+DATASET_NAME="SAVEE"
 USER="guest2savee"
 PASS="welcome!"
 
@@ -23,7 +24,7 @@ BASE_URL="http://kahlan.eps.surrey.ac.uk/savee/Data/AudioData/$ACTOR/"
 FILES=$(curl -s -u $USER:$PASS $BASE_URL | grep -o -E "href=\"[^\"]+\"*.wav" | cut -d '"' -f 2)
 
 # Create the directory
-mkdir -p $ACTOR
+mkdir -p ./data
 
 # Download the files
 for FILE in $FILES; do
@@ -36,9 +37,8 @@ for FILE in $FILES; do
     EMOTION=`emotion_to_str ${EMOTE_PREFIX}`
     ID=${FILENAME#"$EMOTE_PREFIX"}
 
-    echo "Emotion: $EMOTION | ID: $ID"
-
-    wget --user $USER --password $PASS $ACTOR ${BASE_URL}${FILE} -O $ACTOR/SAVEE_${ACTOR}_${EMOTION}_${ID}.wav
+    mkdir -p ./data/$EMOTION
+    wget --user $USER --password $PASS $ACTOR ${BASE_URL}${FILE} -O ./data/$EMOTION/${EMOTION}_${ACTOR}_${ID}_${DATASET_NAME}.wav
 
     echo -e "Done\n"
 done
