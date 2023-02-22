@@ -1,3 +1,16 @@
+# VS Code
+.vscode
+
+# Big Files
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+data/*.wav
+
 # Prerequisites
 *.d
 
