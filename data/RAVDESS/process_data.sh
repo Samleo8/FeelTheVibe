@@ -20,6 +20,13 @@ modality_to_str(){
     esac
 }
 
+intensity_to_str(){
+    case $1 in
+        "01") echo "LO";;
+        "02") echo "HI";;
+    esac
+}
+
 DATASET_NAME="RAVDESS"
 EXT="wav"
 
@@ -39,7 +46,7 @@ for FILE in ./speech/*.wav; do
     MODALITY=${ARR_INFO[0]}
     VOCAL_CHANNEL=$(modality_to_str ${ARR_INFO[1]})
     EMOTION=$(emotion_to_str ${ARR_INFO[2]})
-    INTENSITY=${ARR_INFO[3]}
+    INTENSITY=$(intensity_to_str ${ARR_INFO[3]})
     STATEMENT=${ARR_INFO[4]}
     REPETITION=${ARR_INFO[5]}
     ACTOR=${ARR_INFO[6]}
@@ -48,6 +55,6 @@ for FILE in ./speech/*.wav; do
     mkdir -p ./data/${EMOTION}
     NEWFILE="./data/$EMOTION/${EMOTION}_${INTENSITY}_${VOCAL_CHANNEL}_${ACTOR}_${STATEMENT}_${REPETITION}_${DATASET_NAME}.${EXT}"
     echo  "Saving to ${NEWFILE}"
-    mv ${FILE} ${NEWFILE}
+    # mv ${FILE} ${NEWFILE}
 done
 
