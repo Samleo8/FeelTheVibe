@@ -13,11 +13,18 @@ emotion_to_str(){
     esac
 }
 
+modality_to_str(){
+    case $1 in
+        "01") echo "SPEECH";;
+        "02") echo "SONG";;
+    esac
+}
+
 DATASET_NAME="RAVDESS"
 EXT="wav"
 
 mkdir data
-for FILE in ./*.wav; do
+for FILE in ./speech/*.wav; do
     echo "Processing ${FILE}"
     
     # Extract the filename
@@ -29,8 +36,8 @@ for FILE in ./*.wav; do
     
     # Extract the emotion
     # Actor
-    MODALITY=${ARR_INFO[0]}
-    VOCAL_CHANNEL=${ARR_INFO[1]}
+    # MODALITY=
+    VOCAL_CHANNEL=$(modality_to_str ${ARR_INFO[1]})
     EMOTION=$(emotion_to_str ${ARR_INFO[2]})
     INTENSITY=${ARR_INFO[3]}
     STATEMENT=${ARR_INFO[4]}
@@ -39,7 +46,7 @@ for FILE in ./*.wav; do
 
     # Copy the file
     mkdir -p ./data/${EMOTION}
-    NEWFILE="./data/$EMOTION/${EMOTION}_${ACTOR}_${INTENSITY}_${STATEMENT}_${REPITITION}_${DATASET_NAME}.${EXT}"
+    NEWFILE="./data/$EMOTION/${EMOTION}_${INTENSITY}_${VOCAL_CHANNEL}_${ACTOR}_${STATEMENT}_${REPETITION}_${DATASET_NAME}.${EXT}"
     echo  "Saving to ${NEWFILE}"
     mv ${FILE} ${NEWFILE}
 done
