@@ -36,7 +36,7 @@ for FILE in ./speech/*.wav; do
     
     # Extract the emotion
     # Actor
-    # MODALITY=
+    MODALITY=${ARR_INFO[0]}
     VOCAL_CHANNEL=$(modality_to_str ${ARR_INFO[1]})
     EMOTION=$(emotion_to_str ${ARR_INFO[2]})
     INTENSITY=${ARR_INFO[3]}
