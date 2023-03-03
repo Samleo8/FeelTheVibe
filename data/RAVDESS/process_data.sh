@@ -55,6 +55,6 @@ for FILE in ./speech/*.wav; do
     mkdir -p ./data/${EMOTION}
     NEWFILE="./data/$EMOTION/${EMOTION}_${INTENSITY}_${VOCAL_CHANNEL}_${ACTOR}_${STATEMENT}_${REPETITION}_${DATASET_NAME}.${EXT}"
     echo  "Saving to ${NEWFILE}"
-    # mv ${FILE} ${NEWFILE}
+    mv ${FILE} ${NEWFILE}
 done
 
