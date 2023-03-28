@@ -43,7 +43,9 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         if draw_graphs:
             graphs.append({
                 'name': 'Chroma',
-                'X': np.arange(0, len(chroma)).tolist(),
+                'X': {
+                    axes[0]: np.arange(0, len(chroma)).tolist()
+                },
                 'y': chroma.tolist(),
             })
 
@@ -58,8 +60,10 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         if draw_graphs:
             graphs.append({
                 'name': 'Zero-Crossing-Rate',
-                'X': 0, # np.arange(0, len(zcr)).tolist(),
-                'y': zcr #.tolist(),
+                'X': {
+                    axes[0]: np.arange(0, len(zcr)).tolist()
+                },
+                'y': zcr.tolist(),
             })
 
     # Root Mean Square
@@ -73,8 +77,10 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         if draw_graphs:
             graphs.append({
                 'name': 'Root-Mean-Square',
-                'X': 0,
-                'y': rms
+                'X': {
+                    axes[0]: np.arange(0, len(rms)).tolist()
+                },
+                'y': rms.tolist(),
             })
 
     print("Features:", features.shape)
