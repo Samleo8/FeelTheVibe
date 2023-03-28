@@ -34,7 +34,7 @@
                     "value": true,
                     "type": "boolean",
                     "help": "Whether to include root-mean-square",
-                    "param": "use_zcr"
+                    "param": "use_rms"
                 }
             ]
         }

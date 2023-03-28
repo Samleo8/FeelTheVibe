@@ -4,7 +4,7 @@
 PORT=${2:-4446}
 
 # Block Name
-BLOCK_NAME=${1:-"custom"}
+BLOCK_NAME=${1:-"non-mfcc"}
 BLOCK_POSTFIX="-processing-block-py"
 
 BLOCK="${BLOCK_NAME}${BLOCK_POSTFIX}"
