@@ -1,10 +1,10 @@
 {
     "version": 1,
     "info": {
-        "title": "Custom Block",
-        "author": "Test User",
-        "description": "Custom block example",
-        "name": "Custom block",
+        "title": "Non-MFCC Features",
+        "author": "Samuel Leong",
+        "description": "Generating non-MFCC features, including Chroma, ZCR, RMS, etc.",
+        "name": "Non-MFCC Features",
         "cppType": "custom_block",
         "preferConvolution": false,
         "visualization": "dimensionalityReduction",
@@ -13,14 +13,28 @@
     },
     "parameters": [
         {
-            "group": "Scaling",
+            "group": "Features to Include",
             "items": [
                 {
-                    "name": "Scale axes",
-                    "value": 1,
-                    "type": "float",
-                    "help": "Multiplies axes by this number",
-                    "param": "scale-axes"
+                    "name": "Chroma",
+                    "value": true,
+                    "type": "boolean",
+                    "help": "Whether to include Chroma STFT",
+                    "param": "use_chroma"
+                },
+                {
+                    "name": "ZCR",
+                    "value": true,
+                    "type": "boolean",
+                    "help": "Whether to include zero-crossing rate",
+                    "param": "use_zcr"
+                },
+                {
+                    "name": "RMS",
+                    "value": true,
+                    "type": "boolean",
+                    "help": "Whether to include root-mean-square",
+                    "param": "use_zcr"
                 }
             ]
         }
