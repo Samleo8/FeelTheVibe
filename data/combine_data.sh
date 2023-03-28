@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATASETS=("CREMAD" "SAVEE" "TESS")
+DATASETS=("CREMAD" "SAVEE" "TESS" "RAVDESS")
 EMOTIONS=("anger" "disgust" "fear" "happiness" "neutral" "sadness" "surprise")
 
 # Create the data folder
