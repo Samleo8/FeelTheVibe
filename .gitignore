@@ -1,6 +1,7 @@
 # VS Code
 .vscode
 server.pid
+dsp_server.log
 
 # Big Files
 *.zip
