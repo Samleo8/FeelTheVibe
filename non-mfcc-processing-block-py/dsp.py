@@ -57,9 +57,9 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
         if draw_graphs:
             graphs.append({
-                'name': 'Zero Crossing Rate',
-                'X': np.arange(0, len(zcr)).tolist(),
-                'y': zcr.tolist(),
+                'name': 'Zero-Crossing-Rate',
+                'X': 0, # np.arange(0, len(zcr)).tolist(),
+                'y': zcr #.tolist(),
             })
 
     # Root Mean Square
@@ -72,9 +72,9 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
         if draw_graphs:
             graphs.append({
-                'name': 'Root Mean Square',
-                'X': np.arange(0, len(rms)).tolist(),
-                'y': rms.tolist(),
+                'name': 'Root-Mean-Square',
+                'X': 0,
+                'y': rms
             })
 
     print("Features:", features.shape)
