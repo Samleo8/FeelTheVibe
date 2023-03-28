@@ -35,8 +35,11 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         stft = np.abs(librosa.stft(raw_data))
         chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
                          axis=0)
+        
+        chroma_std_dev = np.std(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
+                         axis=0)
 
-        features = np.hstack((features, chroma))
+        features = np.hstack((features, chroma, chroma_std_dev))
 
         print("Chroma:", chroma.shape)
 
