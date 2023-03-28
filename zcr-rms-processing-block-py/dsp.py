@@ -10,38 +10,40 @@ def soundDataToFloat(data):
     INT_MAX = 32768
     return (np.array(data) / INT_MAX).astype(np.float32)
 
+
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, scale_axes):
     raw_data = soundDataToFloat(raw_data)
 
-    # features is a 1D array, reshape so we have a matrix
-    # Chroma_stft
-    # https://librosa.org/doc/main/generated/librosa.feature.chroma_stft.html
+    # Zero Crossing Rate and Root Mean Square Value
     sample_rate = sampling_freq
-    stft = np.abs(librosa.stft(raw_data))
-    chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
-                     axis=0)
+    zcr = np.mean(librosa.feature.zero_crossing_rate(raw_data).T, axis=0)
+    rms = np.mean(librosa.feature.rms(raw_data).T, axis=0)
+
+    zcr_rms = np.concatenate((zcr, rms), axis=0)
+
+    print("ZCR: ", zcr.shape, "RMS: ", rms.shape)
 
     graphs = []
     if draw_graphs:
         graphs.append({
-            'name': 'Chroma',
-            'X': np.arange(0, len(chroma)).tolist(),
-            'y': chroma.tolist(),
+            'name': 'Zero Crossing Rate and RMS',
+            'X': np.arange(0, len(zcr_rms)).tolist(),
+            'y': zcr_rms.tolist(),
         })
 
     return {
-        'features': chroma,
+        'features': zcr_rms,
         'graphs': graphs,
         # if you use FFTs then set the used FFTs here (this helps with memory optimization on MCUs)
         # NOTE: Unsure if this is correct
-        'fft_used': [stft.tolist()],
+        'fft_used': [],
         'output_config': {
             # type can be 'flat', 'image' or 'spectrogram'
             'type': 'flat',
             'shape': {
                 # shape should be { width, height, channels } for image, { width, height } for spectrogram
-                'width': len(chroma),
+                'width': len(zcr_rms),
             }
         }
     }
