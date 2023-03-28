@@ -50,7 +50,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # Zero Crossing Rate
     # https://librosa.org/doc/main/generated/librosa.feature.zero_crossing_rate.html
     if use_zcr:
-        zcr = np.mean(librosa.feature.zero_crossing_rate(raw_data).T, axis=0)
+        zcr = np.mean(librosa.feature.zero_crossing_rate(y=raw_data).T, axis=0)
         features = np.hstack((features, zcr))
 
         print("ZCR:", zcr.shape)
@@ -65,7 +65,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # Root Mean Square
     # https://librosa.org/doc/main/generated/librosa.feature.rms.html
     if use_rms:
-        rms = np.mean(librosa.feature.rms(raw_data).T, axis=0)
+        rms = np.mean(librosa.feature.rms(y=raw_data).T, axis=0)
         features = np.hstack((features, rms))
 
         print("RMS:", rms.shape)
