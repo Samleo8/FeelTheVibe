@@ -5,11 +5,10 @@ import librosa
 import matplotlib.pyplot as plt
 
 
-def soundDataToFloat(SD):
+def soundDataToFloat(data):
     "Converts integer representation back into librosa-friendly floats, given a numpy array SD"
-    # https://www.kaggle.com/general/213391
-    return np.array([np.float32((s >> 2) / (32768.0)) for s in SD])
-
+    INT_MAX = 32768
+    return (np.array(data) / INT_MAX).astype(np.float32)
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, scale_axes):
