@@ -34,12 +34,6 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     if use_chroma:
         stft = np.abs(librosa.stft(raw_data))
         chroma = librosa.feature.chroma_stft(S=stft, sr=sample_rate)
-        chroma_mean = np.mean(chroma.T, axis=0)
-
-        # chroma_std_dev = np.std(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
-        #                  axis=0)
-
-        # print("Chroma:", chroma.shape)
 
         features = np.vstack(
             (features, chroma)) if features is not None else chroma
@@ -78,7 +72,6 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # https://librosa.org/doc/main/generated/librosa.feature.zero_crossing_rate.html
     if use_zcr:
         zcr = librosa.feature.zero_crossing_rate(y=raw_data)
-        zcr_mean = np.mean(zcr.T, axis=0)
         # print("ZCR:", zcr.shape)
 
         features = np.vstack((features, zcr)) if features is not None else zcr
@@ -98,7 +91,6 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         rms = librosa.feature.rms(y=raw_data)
         # print("RMS:", rms.shape)
 
-        rms_mean = np.mean(rms.T, axis=0)
         features = np.vstack((features, rms)) if features is not None else rms
 
         if draw_graphs:
