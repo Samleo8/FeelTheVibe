@@ -3,7 +3,7 @@ import io
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
-
+import matplotlib.cm as cm
 
 def soundDataToFloat(data):
     "Converts integer representation back into librosa-friendly floats, given a numpy array SD"
@@ -26,80 +26,107 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     assert use_chroma or use_zcr or use_rms, "At least one feature must be selected"
 
     # Initialize empty features
-    features = np.empty(0)
+    features = None  # (nfeatures, nframes)
     graphs = []
 
     # Chroma STFT
     # https://librosa.org/doc/main/generated/librosa.feature.chroma_stft.html
     if use_chroma:
         stft = np.abs(librosa.stft(raw_data))
-        chroma = np.mean(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
-                         axis=0)
-        
-        chroma_std_dev = np.std(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
-                         axis=0)
+        chroma = librosa.feature.chroma_stft(S=stft, sr=sample_rate)
+        chroma_mean = np.mean(chroma.T, axis=0)
 
-        features = np.hstack((features, chroma, chroma_std_dev))
+        # chroma_std_dev = np.std(librosa.feature.chroma_stft(S=stft, sr=sample_rate).T,
+        #                  axis=0)
 
-        print("Chroma:", chroma.shape)
+        # print("Chroma:", chroma.shape)
+
+        features = np.vstack(
+            (features, chroma)) if features is not None else chroma
 
         if draw_graphs:
+            # Create image
+            # https://github.com/edgeimpulse/processing-blocks/blob/master/mfcc/dsp.py
+            fig, ax = plt.subplots()
+            fig.set_size_inches(18.5, 20.5)
+            ax.set_axis_off()
+            # img = librosa.display.specshow(chroma,
+            #                                y_axis='log',
+            #                                x_axis='time',
+            #                                ax=ax)
+            # fig.colorbar(img, ax=ax)
+            # ax.label_outer()
+            cax = ax.imshow(chroma,
+                            interpolation='nearest',
+                            cmap=cm.coolwarm,
+                            origin='lower')
+
+            buf = io.BytesIO()
+            plt.savefig(buf, format='svg', bbox_inches='tight', pad_inches=0)
+            buf.seek(0)
+            image = (base64.b64encode(buf.getvalue()).decode('ascii'))
+            buf.close()
+
             graphs.append({
-                'name': 'Chroma',
-                'X': {
-                    axes[0]: np.arange(0, len(chroma)).tolist()
-                },
-                'y': chroma.tolist(),
+                'name': 'Chroma Spectrogram',
+                'image': image,
+                'imageMimeType': 'image/svg+xml',
+                'type': 'image'
             })
 
     # Zero Crossing Rate
     # https://librosa.org/doc/main/generated/librosa.feature.zero_crossing_rate.html
     if use_zcr:
-        zcr = np.mean(librosa.feature.zero_crossing_rate(y=raw_data).T, axis=0)
-        features = np.hstack((features, zcr))
+        zcr = librosa.feature.zero_crossing_rate(y=raw_data)
+        zcr_mean = np.mean(zcr.T, axis=0)
+        # print("ZCR:", zcr.shape)
 
-        print("ZCR:", zcr.shape)
+        features = np.vstack((features, zcr)) if features is not None else zcr
 
         if draw_graphs:
             graphs.append({
                 'name': 'Zero-Crossing-Rate',
                 'X': {
-                    axes[0]: np.arange(0, len(zcr)).tolist()
+                    axes[0]: np.arange(0, zcr.shape[1]).tolist()
                 },
-                'y': zcr.tolist(),
+                'y': zcr.flatten().tolist(),
             })
 
     # Root Mean Square
     # https://librosa.org/doc/main/generated/librosa.feature.rms.html
     if use_rms:
-        rms = np.mean(librosa.feature.rms(y=raw_data).T, axis=0)
-        features = np.hstack((features, rms))
+        rms = librosa.feature.rms(y=raw_data)
+        # print("RMS:", rms.shape)
 
-        print("RMS:", rms.shape)
+        rms_mean = np.mean(rms.T, axis=0)
+        features = np.vstack((features, rms)) if features is not None else rms
 
         if draw_graphs:
             graphs.append({
                 'name': 'Root-Mean-Square',
                 'X': {
-                    axes[0]: np.arange(0, len(rms)).tolist()
+                    axes[0]: np.arange(0, rms.shape[1]).tolist()
                 },
-                'y': rms.tolist(),
+                'y': rms.flatten().tolist(),
             })
 
-    print("Features:", features.shape)
+    # print("Features:", features.shape)
 
     return {
-        'features': features,
+        'features': features.flatten().tolist(),
         'graphs': graphs,
         # if you use FFTs then set the used FFTs here (this helps with memory optimization on MCUs)
         # NOTE: Unsure if this is correct
-        'fft_used': [] if not use_chroma else [stft.tolist()],
+        'fft_used': [], # if not use_chroma else stft.tolist(),
         'output_config': {
             # type can be 'flat', 'image' or 'spectrogram'
-            'type': 'flat',
+            # 'type': 'flat',
+            'type': 'spectrogram',
             'shape': {
                 # shape should be { width, height, channels } for image, { width, height } for spectrogram
-                'width': len(features),
+                # 'width': len(features),
+                'height': features.shape[0],
+                'width': features.shape[1]
             }
         }
     }
