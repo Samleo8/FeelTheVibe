@@ -143,3 +143,18 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
             }
         }
     }
+
+if __name__ == "__main__":
+    raw_data = np.loadtxt("./test_data.txt", dtype=np.int16)
+
+    generate_features(
+        implementation_version=1,
+        draw_graphs=False,
+        raw_data=raw_data,
+        axes=[0,1,2],
+        sampling_freq=16000,
+        lpc_order=16,
+        use_chroma=True,
+        use_zcr=True,
+        use_rms=False
+    )
