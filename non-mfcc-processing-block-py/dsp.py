@@ -5,6 +5,7 @@ import librosa
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
 
+
 def soundDataToFloat(data):
     "Converts integer representation back into librosa-friendly floats, given a numpy array SD"
     INT_MAX = 32768
@@ -12,7 +13,7 @@ def soundDataToFloat(data):
 
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
-                      sampling_freq, use_chroma, use_zcr, use_rms):
+                      sampling_freq, lpc_order, use_chroma, use_zcr, use_rms):
     '''
     Generate series of features from raw data
 
@@ -23,11 +24,29 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     raw_data = soundDataToFloat(raw_data)
     sample_rate = sampling_freq
 
-    assert use_chroma or use_zcr or use_rms, "At least one feature must be selected"
+    assert lpc_order > 0 or use_chroma or use_zcr or use_rms, "At least one feature must be selected"
 
     # Initialize empty features
     features = None  # (nfeatures, nframes)
     graphs = []
+
+    # LPC
+    # https://librosa.org/doc/main/generated/librosa.lpc.html
+    if lpc_order > 0:
+        lpc = librosa.lpc(raw_data, order=lpc_order)
+        # print("LPC:", lpc.shape)
+
+        features = np.vstack((features, lpc)) \
+            if features is not None else lpc
+
+        if draw_graphs:
+            graphs.append({
+                'name': 'Linear Predictive Coding',
+                'X': {
+                    axes[0]: np.arange(0, lpc.shape[1]).tolist()
+                },
+                'y': lpc.flatten().tolist(),
+            })
 
     # Chroma STFT
     # https://librosa.org/doc/main/generated/librosa.feature.chroma_stft.html
@@ -35,8 +54,8 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         stft = np.abs(librosa.stft(raw_data))
         chroma = librosa.feature.chroma_stft(S=stft, sr=sample_rate)
 
-        features = np.vstack(
-            (features, chroma)) if features is not None else chroma
+        features = np.vstack((features, chroma)) \
+            if features is not None else chroma
 
         if draw_graphs:
             # Create image
@@ -74,11 +93,12 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         zcr = librosa.feature.zero_crossing_rate(y=raw_data)
         # print("ZCR:", zcr.shape)
 
-        features = np.vstack((features, zcr)) if features is not None else zcr
+        features = np.vstack((features, zcr)) \
+            if features is not None else zcr
 
         if draw_graphs:
             graphs.append({
-                'name': 'Zero-Crossing-Rate',
+                'name': 'Zero Crossing Rate',
                 'X': {
                     axes[0]: np.arange(0, zcr.shape[1]).tolist()
                 },
@@ -91,11 +111,12 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         rms = librosa.feature.rms(y=raw_data)
         # print("RMS:", rms.shape)
 
-        features = np.vstack((features, rms)) if features is not None else rms
+        features = np.vstack((features, rms)) \
+            if features is not None else rms
 
         if draw_graphs:
             graphs.append({
-                'name': 'Root-Mean-Square',
+                'name': 'Root Mean Square',
                 'X': {
                     axes[0]: np.arange(0, rms.shape[1]).tolist()
                 },
@@ -109,7 +130,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         'graphs': graphs,
         # if you use FFTs then set the used FFTs here (this helps with memory optimization on MCUs)
         # NOTE: Unsure if this is correct
-        'fft_used': [], # if not use_chroma else stft.tolist(),
+        'fft_used': [],  # if not use_chroma else stft.tolist(),
         'output_config': {
             # type can be 'flat', 'image' or 'spectrogram'
             # 'type': 'flat',

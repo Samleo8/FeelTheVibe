@@ -16,6 +16,13 @@
             "group": "Features to Include",
             "items": [
                 {
+                    "name": "LPC Order",
+                    "value": 16,
+                    "type": "int",
+                    "help": "Order of filter used in linear prediction coding. Num Coefficients = order + 1. If <=0, LPC is not used.",
+                    "param": "lpc_order"
+                },
+                {
                     "name": "Chroma",
                     "value": true,
                     "type": "boolean",
@@ -31,7 +38,7 @@
                 },
                 {
                     "name": "RMS",
-                    "value": true,
+                    "value": false,
                     "type": "boolean",
                     "help": "Whether to include root-mean-square",
                     "param": "use_rms"
