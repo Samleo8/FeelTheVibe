@@ -13,7 +13,7 @@ def soundDataToFloat(data):
 
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
-                      sampling_freq, lpc_order, use_chroma, use_zcr, use_rms):
+                      sampling_freq, lpc_order, num_lpcc, use_chroma, use_zcr, use_rms):
     '''
     Generate series of features from raw data
 
@@ -25,6 +25,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     sample_rate = sampling_freq
 
     assert lpc_order > 0 or use_chroma or use_zcr or use_rms, "At least one feature must be selected"
+    assert num_lpcc >= lpc_order + 1, "Number of LPCC coefficients must be larger than LPC filter order + 1"
 
     # Initialize empty features
     features = None  # (nfeatures, nframes)
@@ -34,25 +35,19 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # https://librosa.org/doc/main/generated/librosa.lpc.html
     if lpc_order > 0:
         lpc = librosa.lpc(raw_data, order=lpc_order)
-        # print("LPC:", lpc.shape)
+        print("LPC:", lpc.shape)
 
         features = np.vstack((features, lpc)) \
             if features is not None else lpc
 
-        if draw_graphs:
-            graphs.append({
-                'name': 'Linear Predictive Coding',
-                'X': {
-                    axes[0]: np.arange(0, lpc.shape[1]).tolist()
-                },
-                'y': lpc.flatten().tolist(),
-            })
+    # TODO: Calculate LPCC Coefficients, may need to apply lpc(c) on windows of raw data?
 
     # Chroma STFT
     # https://librosa.org/doc/main/generated/librosa.feature.chroma_stft.html
     if use_chroma:
         stft = np.abs(librosa.stft(raw_data))
         chroma = librosa.feature.chroma_stft(S=stft, sr=sample_rate)
+        print("Chroma:", chroma.shape)
 
         features = np.vstack((features, chroma)) \
             if features is not None else chroma

@@ -13,15 +13,27 @@
     },
     "parameters": [
         {
-            "group": "Features to Include",
+            "group": "LPCC",
             "items": [
                 {
                     "name": "LPC Order",
-                    "value": 16,
+                    "value": 10,
                     "type": "int",
-                    "help": "Order of filter used in linear prediction coding. Num Coefficients = order + 1. If <=0, LPC is not used.",
+                    "help": "Order of filter used in linear prediction coding. If <=0, LPC is not used.",
                     "param": "lpc_order"
                 },
+                {
+                    "name": "Number of LPCC Coefficients",
+                    "value": 13,
+                    "type": "int",
+                    "help": "Number of LPCC coefficients to use. Must be >= lpc_order + 1",
+                    "param": "num_lpcc"
+                }
+            ]
+        },
+        {
+            "group": "Other Features to Include",
+            "items": [
                 {
                     "name": "Chroma",
                     "value": true,
