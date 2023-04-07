@@ -14,7 +14,7 @@ kill_old_procs(){
 PORT=${2:-4446}
 
 # Block Name
-BLOCK_NAME=${1:-"non-mfcc"}
+BLOCK_NAME=${1:-"lpcc"}
 BLOCK_POSTFIX="-processing-block-py"
 
 BLOCK="${BLOCK_NAME}${BLOCK_POSTFIX}"

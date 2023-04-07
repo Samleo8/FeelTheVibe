@@ -1,0 +1,35 @@
+{
+    "version": 1,
+    "info": {
+        "title": "Non-MFCC Features",
+        "author": "Samuel Leong",
+        "description": "Generating non-MFCC features, including Chroma, ZCR, RMS, etc.",
+        "name": "Non-MFCC Features",
+        "cppType": "custom_block",
+        "preferConvolution": false,
+        "visualization": "dimensionalityReduction",
+        "experimental": false,
+        "latestImplementationVersion": 1
+    },
+    "parameters": [
+        {
+            "group": "LPCC",
+            "items": [
+                {
+                    "name": "LPC Order",
+                    "value": 10,
+                    "type": "int",
+                    "help": "Order of filter used in linear prediction coding. Must be > 0.",
+                    "param": "lpc_order"
+                },
+                {
+                    "name": "Number of LPCC Coefficients",
+                    "value": 13,
+                    "type": "int",
+                    "help": "Number of LPCC coefficients to use. Must be >= lpc_order + 1",
+                    "param": "num_lpcc"
+                }
+            ]
+        }
+    ]
+}
