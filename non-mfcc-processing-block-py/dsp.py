@@ -32,7 +32,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     graphs = []
 
     # LPC
-    # TODO: Use custom pymir library https://github.com/RicherMans/pymir/
+    # TODO: Use custom pymir library (forked from https://github.com/RicherMans/pymir/)
     if lpc_order > 0:
         lpc = librosa.lpc(raw_data, order=lpc_order)
         print("LPC:", lpc.shape)
