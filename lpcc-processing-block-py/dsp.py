@@ -37,14 +37,15 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     print("Sample Freq", sampling_freq)
     frame_len = 2048 # using default value from librosa, based on N_FFT
     hop_len = 492 # not sure what this should be
-    frames = librosa.util.frame(raw_data, frame_length=frame_len, hop_length=hop_len)
-    windowed_frames = np.hanning(frame_len).reshape(-1, 1) * frames
+    frames = librosa.util.frame(raw_data, frame_length=frame_len, hop_length=hop_len).T
+    windowed_frames = np.hanning(frame_len) * frames
 
     print("Frames shape: ", frames.shape)
     print("Windowed frames shape: ", windowed_frames.shape)
 
     # LPC
-    lpc = librosa.lpc(raw_data, order=lpc_order)
+    lpc = librosa.lpc(windowed_frames, order=lpc_order)
+    print("LPC shape: ", lpc.shape)
 
     # LPCC Calculation
 
