@@ -11,15 +11,44 @@ def soundDataToFloat(data):
     INT_MAX = 32768
     return (np.array(data) / INT_MAX).astype(np.float32)
 
-def lpcc(lpc_coeffcients, error, num_lpcc):
+def get_lpc_error(signal, lpc_coeffcients):
+    '''
+    Calculate the prediction error signal of the LPC filter coefficients using autocorrlation
+    Reference: 
+        https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/120_lpc%20prediction%20error.pdf
+
+    Inputs
+    ------
+    signal: input signal (n_frames, n_samples)
+    lpc_coeffcients: Filter coefficients (n_frames, n_filter_order+1)
+    '''
+    n_frames, n_samples = signal.shape
+    _, n_filter_order = lpc_coeffcients.shape
+
+    # Calculate autocorrelation
+    # TODO: Check if autocorrelation is actually correct
+    autocorr = librosa.autocorrelate(signal, max_size=n_filter_order)
+
+    err = np.sum(lpc_coeffcients * autocorr, axis=1)
+    err += np.finfo(float).eps
+
+    # TODO: Check if need to square root
+    return err
+
+def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     '''
     Calculate LPCC coefficients from LPC filter coefficients
+    Algorithm from https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
 
+    Inputs
+    ------
     lpc_coeffcients: Filter coefficients (n_frames, n_filter_order+1)
     error: Error power (n_frames, )
     num_lpcc: number of LPCC coefficients to calculate (int)
 
-    Algorithm from https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
+    Returns
+    -------
+    lpcc: LPCC coefficients (n_frames, num_lpcc)
     '''
     n_frames, n_filter_order = lpc_coeffcients.shape
     lpcc = np.zeros((n_frames, num_lpcc))
@@ -35,7 +64,7 @@ def lpcc(lpc_coeffcients, error, num_lpcc):
         m_minus_k = np.arange(m - 1, 0, -1)
         c_mminusk = lpcc[:, 1:m:-1]
 
-         # note that extended version includes 0s, which is important to cancel out unwanted parts
+        # note that extended version includes 0s, which is important to cancel out unwanted parts
         a_k = lpc_coeffcients_extend[:, 1:m]
         sm_array = m_minus_k * a_k * c_mminusk
 
@@ -43,6 +72,7 @@ def lpcc(lpc_coeffcients, error, num_lpcc):
         c_m = -a_m - np.sum(sm_array, axis=1) / m
         lpcc[:, m] = c_m
 
+    return lpcc
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, lpc_order, num_lpcc):
@@ -80,12 +110,11 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     print("LPC shape: ", lpc.shape)
 
     # LPCC Calculation
+    error = get_lpc_error(windowed_frames, lpc)
+    lpcc = lpc_to_lpcc(lpc, error, num_lpcc)
 
     features = np.vstack((features, lpc)) \
         if features is not None else lpc
-
-    # TODO: Calculate LPCC Coefficients, may need to apply lpc(c) on windows of raw data?
-    # TODO: LPCC Coefficients require the error signal, which is not returned by librosa.lpc
 
     return {
         'features': features.flatten().tolist(),
