@@ -53,6 +53,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         if features is not None else lpc
 
     # TODO: Calculate LPCC Coefficients, may need to apply lpc(c) on windows of raw data?
+    # TODO: LPCC Coefficients require the error signal, which is not returned by librosa.lpc
 
     return {
         'features': features.flatten().tolist(),
