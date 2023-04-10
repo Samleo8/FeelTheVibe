@@ -2,6 +2,8 @@
 
 CMU 18-848 Embedded Deep Learning Project involving speech emotion recognition on embedded system (Arduino BLE Sense).
 
+Contains custom LPCC block (Linear Predictive Coding Coefficients) used for feature extraction.
+
 ## Setup
 
 ### Data Files
