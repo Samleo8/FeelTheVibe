@@ -33,7 +33,7 @@ def get_lpc_error(signal, lpc_coeffcients):
     err += np.finfo(float).eps
 
     # TODO: Check if need to square root
-    return err
+    return np.sqrt(err)
 
 def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     '''
@@ -55,14 +55,15 @@ def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     lpcc[:, 0] = np.log(error)
 
     # For extended LPCC, pad with zeros
-    lpc_coeffcients_extend = np.hstack((lpc_coeffcients, np.zeros((n_frames, num_lpcc - n_filter_order - 1))))
+    lpc_coeffcients_extend = np.hstack((lpc_coeffcients, np.zeros((n_frames, num_lpcc - n_filter_order))))
+    print("lpc_coeffcients_extend shape: ", lpc_coeffcients_extend.shape)
 
     for m in range(1, num_lpcc):
         # NOTE: Take advantage of the fact that until next iteration, rest of lpcc part is 0
         a_m = -lpc_coeffcients_extend[:, m]
 
         m_minus_k = np.arange(m - 1, 0, -1)
-        c_mminusk = lpcc[:, 1:m:-1]
+        c_mminusk = lpcc[:, m_minus_k]
 
         # note that extended version includes 0s, which is important to cancel out unwanted parts
         a_k = lpc_coeffcients_extend[:, 1:m]
@@ -107,14 +108,13 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
     # LPC
     lpc = librosa.lpc(windowed_frames, order=lpc_order)
-    print("LPC shape: ", lpc.shape)
 
     # LPCC Calculation
     error = get_lpc_error(windowed_frames, lpc)
     lpcc = lpc_to_lpcc(lpc, error, num_lpcc)
 
-    features = np.vstack((features, lpc)) \
-        if features is not None else lpc
+    features = np.vstack((features, lpcc)) \
+        if features is not None else lpcc
 
     return {
         'features': features.flatten().tolist(),
