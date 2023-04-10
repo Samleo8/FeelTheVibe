@@ -11,6 +11,38 @@ def soundDataToFloat(data):
     INT_MAX = 32768
     return (np.array(data) / INT_MAX).astype(np.float32)
 
+def lpcc(lpc_coeffcients, error, num_lpcc):
+    '''
+    Calculate LPCC coefficients from LPC filter coefficients
+
+    lpc_coeffcients: Filter coefficients (n_frames, n_filter_order+1)
+    error: Error power (n_frames, )
+    num_lpcc: number of LPCC coefficients to calculate (int)
+
+    Algorithm from https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
+    '''
+    n_frames, n_filter_order = lpc_coeffcients.shape
+    lpcc = np.zeros((n_frames, num_lpcc))
+    lpcc[:, 0] = np.log(error)
+
+    # For extended LPCC, pad with zeros
+    lpc_coeffcients_extend = np.hstack((lpc_coeffcients, np.zeros((n_frames, num_lpcc - n_filter_order - 1))))
+
+    for m in range(1, num_lpcc):
+        # NOTE: Take advantage of the fact that until next iteration, rest of lpcc part is 0
+        a_m = -lpc_coeffcients_extend[:, m]
+
+        m_minus_k = np.arange(m - 1, 0, -1)
+        c_mminusk = lpcc[:, 1:m:-1]
+
+         # note that extended version includes 0s, which is important to cancel out unwanted parts
+        a_k = lpc_coeffcients_extend[:, 1:m]
+        sm_array = m_minus_k * a_k * c_mminusk
+
+        # Vectorized operation :)
+        c_m = -a_m - np.sum(sm_array, axis=1) / m
+        lpcc[:, m] = c_m
+
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, lpc_order, num_lpcc):
