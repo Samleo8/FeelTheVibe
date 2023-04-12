@@ -1,9 +1,9 @@
 {
     "version": 1,
     "info": {
-        "title": "Non-MFCC Features",
+        "title": "LPCC Features",
         "author": "Samuel Leong",
-        "description": "Generating non-MFCC features, including Chroma, ZCR, RMS, etc.",
+        "description": "Generating LPCC  Features (Linear Predictive Cepstral Coefficients)",
         "name": "Non-MFCC Features",
         "cppType": "custom_block",
         "preferConvolution": false,
