@@ -1,7 +1,7 @@
 {
     "version": 1,
     "info": {
-        "title": "LPCC Features",
+        "title": "LPCC",
         "author": "Samuel Leong",
         "description": "Generating LPCC  Features (Linear Predictive Cepstral Coefficients)",
         "name": "Non-MFCC Features",
