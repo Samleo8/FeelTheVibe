@@ -113,8 +113,39 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     error = get_lpc_error(windowed_frames, lpc)
     lpcc = lpc_to_lpcc(lpc, error, num_lpcc)
 
+    # NOTE: Transpose to get into right shape for NN
+    lpcc = lpcc.T
+
+    # Display graphs
+    if draw_graphs:
+        # Create image
+        # https://github.com/edgeimpulse/processing-blocks/blob/master/mfcc/dsp.py
+        fig, ax = plt.subplots()
+        fig.set_size_inches(18.5, 20.5)
+        ax.set_axis_off()
+        cax = ax.imshow(lpcc,
+                        interpolation='nearest',
+                        cmap=cm.coolwarm,
+                        origin='lower')
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='svg', bbox_inches='tight', pad_inches=0)
+        buf.seek(0)
+        image = (base64.b64encode(buf.getvalue()).decode('ascii'))
+        buf.close()
+
+        graphs.append({
+            'name': 'Chroma Spectrogram',
+            'image': image,
+            'imageMimeType': 'image/svg+xml',
+            'type': 'image'
+        })
+
+    # Concat features
     features = np.vstack((features, lpcc)) \
         if features is not None else lpcc
+
+    print("Features shape: ", features.shape)
 
     return {
         'features': features.flatten().tolist(),

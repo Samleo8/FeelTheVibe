@@ -118,7 +118,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
                 'y': rms.flatten().tolist(),
             })
 
-    # print("Features:", features.shape)
+    print("Features:", features.shape)
 
     return {
         'features': features.flatten().tolist(),
@@ -149,7 +149,7 @@ if __name__ == "__main__":
         axes=[0,1,2],
         sampling_freq=16000,
         num_lpcc=17,
-        lpc_order=16,
+        lpc_order=0,
         use_chroma=True,
         use_zcr=True,
         use_rms=False
