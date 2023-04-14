@@ -33,7 +33,8 @@ def get_lpc_error(signal, lpc_coeffcients):
     err += np.finfo(float).eps
 
     # TODO: Check if need to square root
-    return np.sqrt(err)
+    # return np.sqrt(err)
+    return err
 
 def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     '''
@@ -135,7 +136,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         buf.close()
 
         graphs.append({
-            'name': 'Chroma Spectrogram',
+            'name': 'LPCC Features',
             'image': image,
             'imageMimeType': 'image/svg+xml',
             'type': 'image'
