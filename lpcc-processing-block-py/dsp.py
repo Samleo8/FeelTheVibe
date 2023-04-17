@@ -99,8 +99,9 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # https://stackoverflow.com/a/66921909
     # TODO: figure out frame length from sampling frequency?
     print("Sample Freq", sampling_freq)
-    frame_len = 2048 # using default value from librosa, based on N_FFT
-    hop_len = 492 # not sure what this should be
+    frame_len = 2048 # TODO: using default value from librosa, based on N_FFT
+    hop_len = 492 # TODO: not sure what this should be
+
     frames = librosa.util.frame(raw_data, frame_length=frame_len, hop_length=hop_len).T
     windowed_frames = np.hanning(frame_len) * frames
 
