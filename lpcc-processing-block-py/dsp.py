@@ -26,15 +26,14 @@ def get_lpc_error(signal, lpc_coeffcients):
     _, n_filter_order = lpc_coeffcients.shape
 
     # Calculate autocorrelation
-    # TODO: Check if autocorrelation is actually correct
     autocorr = librosa.autocorrelate(signal, max_size=n_filter_order)
 
     err = np.sum(lpc_coeffcients * autocorr, axis=1)
     err += np.finfo(float).eps
 
-    # TODO: Check if need to square root
-    # return np.sqrt(err)
-    return err
+    # TODO: Probably need to square root, since we want RMS?
+    return np.sqrt(err)
+    # return err
 
 def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     '''
