@@ -97,17 +97,14 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
     # Split into frames
     # https://stackoverflow.com/a/66921909
-
-    # Convert frame length in ms from sampling frequency
-    # TODO: find Nyquist frequency, and make sure we don't go above that
-    MS_TO_S = 1 / 1000
-
     # NOTE: Following values based on paper
     # TODO: Make this a parameter
     frame_len_ms = 20
-    frame_len = int(MS_TO_S * frame_len_ms * sampling_freq)
-
     hop_len_ms = 10
+
+    # Convert frame length in ms to n_samples, using sampling frequency
+    MS_TO_S = 1 / 1000
+    frame_len = int(MS_TO_S * frame_len_ms * sampling_freq)
     hop_len = int(MS_TO_S * hop_len_ms * sampling_freq)
 
     print("Sample Freq", sampling_freq)
