@@ -95,12 +95,27 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     features = None  # (nfeatures, nframes)
     graphs = []
 
-    # TODO: might need to split into frames
+    # Split into frames
     # https://stackoverflow.com/a/66921909
-    # TODO: figure out frame length from sampling frequency?
+
+    # Convert frame length in ms from sampling frequency
+    # TODO: find Nyquist frequency, and make sure we don't go above that
+    MS_TO_S = 1 / 1000
+
+    # NOTE: Following values based on paper
+    # TODO: Make this a parameter
+    frame_len_ms = 20
+    frame_len = int(MS_TO_S * frame_len_ms * sampling_freq)
+
+    hop_len_ms = 10
+    hop_len = int(MS_TO_S * hop_len_ms * sampling_freq)
+
     print("Sample Freq", sampling_freq)
-    frame_len = 2048 # TODO: using default value from librosa, based on N_FFT
-    hop_len = 492 # TODO: not sure what this should be, this forces it to be the (default) 126 columns
+    print("Frame length: ", frame_len_ms, "ms,", frame_len, "samples")
+    print("Hop length: ", hop_len_ms, "ms,", hop_len, "samples")
+
+    # frame_len = 2048 # TODO: using default value from librosa, based on N_FFT
+    # hop_len = 492 # TODO: not sure what this should be, this forces it to be the (default) 126 columns
 
     frames = librosa.util.frame(raw_data, frame_length=frame_len, hop_length=hop_len).T
     windowed_frames = np.hanning(frame_len) * frames
@@ -112,6 +127,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     lpc = librosa.lpc(windowed_frames, order=lpc_order)
 
     # LPCC Calculation
+    # TODO: Need to check error calculation
     error = get_lpc_error(windowed_frames, lpc)
     lpcc = lpc_to_lpcc(lpc, error, num_lpcc)
 
