@@ -1,5 +1,6 @@
 import base64
 import io
+import sys
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
@@ -99,7 +100,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # TODO: figure out frame length from sampling frequency?
     print("Sample Freq", sampling_freq)
     frame_len = 2048 # TODO: using default value from librosa, based on N_FFT
-    hop_len = 492 # TODO: not sure what this should be
+    hop_len = 492 # TODO: not sure what this should be, this forces it to be the (default) 126 columns
 
     frames = librosa.util.frame(raw_data, frame_length=frame_len, hop_length=hop_len).T
     windowed_frames = np.hanning(frame_len) * frames
@@ -169,13 +170,21 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
 if __name__ == "__main__":
     raw_data = np.loadtxt("./test_data.txt", dtype=np.int16)
+    save_img = bool(int(sys.argv[1])) if len(sys.argv) > 1 else False
 
-    generate_features(
+    info_dict = generate_features(
         implementation_version=1,
-        draw_graphs=False,
+        draw_graphs=save_img,
         raw_data=raw_data,
         axes=[0,1,2],
         sampling_freq=16000,
         num_lpcc=20,
         lpc_order=16
     )
+
+    if save_img:
+        imgdata = base64.b64decode(info_dict['graphs'][0]['image'])
+        filename = 'test_data_lpcc.jpg'
+        with open(filename, 'wb') as f:
+            f.write(imgdata)
+        print("Saved image representation of LPCC features to ", filename)
