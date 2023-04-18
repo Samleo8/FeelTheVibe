@@ -17,6 +17,7 @@ BLOCK_POSTFIX="-processing-block-py"
 BLOCK="${BLOCK_NAME}${BLOCK_POSTFIX}"
 
 # Kill any old processes
+git pull
 kill_old_procs
 
 # Start server
