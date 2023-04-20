@@ -27,7 +27,7 @@
                     "value": 10,
                     "type": "float",
                     "help": "Stride length of window/frame in milliseconds (ms)",
-                    "param": "num_lpcc"
+                    "param": "hop_len_ms"
                 }
             ]
         },
