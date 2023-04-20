@@ -13,6 +13,25 @@
     },
     "parameters": [
         {
+            "group": "Frame Split",
+            "items": [
+                {
+                    "name": "Frame Length (ms)",
+                    "value": 20,
+                    "type": "float",
+                    "help": "Length of frame/window in milliseconds (ms)",
+                    "param": "frame_len_ms"
+                },
+                {
+                    "name": "Frame Stride (ms)",
+                    "value": 10,
+                    "type": "float",
+                    "help": "Stride length of window/frame in milliseconds (ms)",
+                    "param": "num_lpcc"
+                }
+            ]
+        },
+        {
             "group": "LPCC",
             "items": [
                 {
