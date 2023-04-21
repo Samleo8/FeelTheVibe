@@ -2,11 +2,13 @@
 
 # Kill old processses
 kill_old_procs(){
+    PORT=${1:-4446}
+
     if [ -f server.pid ]; then
-        kill $(cat server.pid)
+        kill $(cat server_$PORT.pid)
     fi
 
-    fuser -k $1/tcp
+    fuser -k $PORT/tcp
 }
 
 # Ports
@@ -32,7 +34,7 @@ cd ..
 echo "Server started at localhost:$PORT -> https://vibe.strasserver.com"
 
 # Save PID to file to kill later
-echo $PID > server.pid
+echo $PID > server_$PORT.pid
 
 # Tail the log file
 tail -F $BLOCK/dsp_server.log
