@@ -12,6 +12,73 @@ def soundDataToFloat(data):
     return (np.array(data) / INT_MAX).astype(np.float32)
 
 
+def get_lpc_error(signal, lpc_coeffcients):
+    '''
+    Calculate the prediction error signal of the LPC filter coefficients using autocorrlation
+    Reference: 
+        https://web.ece.ucsb.edu/Faculty/Rabiner/ece259/Reprints/120_lpc%20prediction%20error.pdf
+
+    Inputs
+    ------
+    signal: input signal (n_frames, n_samples)
+    lpc_coeffcients: Filter coefficients (n_frames, n_filter_order+1)
+    '''
+    n_frames, n_samples = signal.shape
+    _, n_filter_order = lpc_coeffcients.shape
+
+    # Calculate autocorrelation
+    autocorr = librosa.autocorrelate(signal, max_size=n_filter_order)
+
+    err = np.sum(lpc_coeffcients * autocorr, axis=1)
+    err += np.finfo(float).eps
+
+    # TODO: Probably need to square root, since we want RMS?
+    return np.sqrt(err)
+    # return err
+
+
+def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
+    '''
+    Calculate LPCC coefficients from LPC filter coefficients
+    Algorithm from https://www.mathworks.com/help/dsp/ref/lpctofromcepstralcoefficients.html
+
+    Inputs
+    ------
+    lpc_coeffcients: Filter coefficients (n_frames, n_filter_order+1)
+    error: Error power (n_frames, )
+    num_lpcc: number of LPCC coefficients to calculate (int)
+
+    Returns
+    -------
+    lpcc: LPCC coefficients (n_frames, num_lpcc)
+    '''
+    n_frames, n_filter_order = lpc_coeffcients.shape
+    lpcc = np.zeros((n_frames, num_lpcc))
+    lpcc[:, 0] = np.log(error)
+
+    # For extended LPCC, pad with zeros
+    lpc_coeffcients_extend = np.hstack(
+        (lpc_coeffcients, np.zeros((n_frames, num_lpcc - n_filter_order))))
+    print("lpc_coeffcients_extend shape: ", lpc_coeffcients_extend.shape)
+
+    for m in range(1, num_lpcc):
+        # NOTE: Take advantage of the fact that until next iteration, rest of lpcc part is 0
+        a_m = -lpc_coeffcients_extend[:, m]
+
+        m_minus_k = np.arange(m - 1, 0, -1)
+        c_mminusk = lpcc[:, m_minus_k]
+
+        # note that extended version includes 0s, which is important to cancel out unwanted parts
+        a_k = lpc_coeffcients_extend[:, 1:m]
+        sm_array = m_minus_k * a_k * c_mminusk
+
+        # Vectorized operation :)
+        c_m = -a_m - np.sum(sm_array, axis=1) / m
+        lpcc[:, m] = c_m
+
+    return lpcc
+
+
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, lpc_order, num_lpcc, num_mfcc,
                       use_mfcc_deltas, use_zcr, use_rms, use_spec_centroid,
@@ -26,63 +93,39 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     raw_data = soundDataToFloat(raw_data)
     sample_rate = sampling_freq
 
-    assert lpc_order > 0, "At least one feature must be selected"
+    assert lpc_order > 0, "LPC must have a strictly positive order number"
     assert num_lpcc >= lpc_order + 1, "Number of LPCC coefficients must be larger than LPC filter order + 1"
+    assert num_mfcc > 0, "Number of MFCC coefficients must be larger than 0"
 
-    # Initialize empty features
-    features = None  # (nfeatures, nframes)
-    graphs = []
-
+    ##======LPCC=====##
     # LPC
-    # https://librosa.org/doc/main/generated/librosa.lpc.html
-    if lpc_order > 0:
-        lpc = librosa.lpc(raw_data, order=lpc_order)
-        print("LPC:", lpc.shape)
+    lpc = librosa.lpc(raw_data, order=lpc_order)
 
-        features = np.vstack((features, lpc)) \
-            if features is not None else lpc
+    # LPCC Calculation
+    # TODO: Need to check error calculation
+    error = get_lpc_error(raw_data, lpc)
+    lpcc = lpc_to_lpcc(lpc, error, num_lpcc)
+    # print("LPCC:", lpcc.shape)
 
-    # TODO: Calculate LPCC Coefficients, may need to apply lpc(c) on windows of raw data?
+    features = np.vstack((features, lpcc))
 
-    # Chroma STFT
-    # https://librosa.org/doc/main/generated/librosa.feature.chroma_stft.html
-    if use_chroma:
-        stft = np.abs(librosa.stft(raw_data))
-        chroma = librosa.feature.chroma_stft(S=stft, sr=sample_rate)
-        print("Chroma:", chroma.shape)
+    ##======MFCC=====##
+    # MFCC
+    # https://librosa.org/doc/main/generated/librosa.feature.mfcc.html
+    mfcc = librosa.feature.mfcc(y=raw_data, sr=sample_rate, n_mfcc=num_mfcc)
+    features = np.vstack((features, mfcc))
+    # print("MFCC:", mfcc.shape)
 
-        features = np.vstack((features, chroma)) \
-            if features is not None else chroma
+    # MFCC Delta
+    # NOTE: Apparently important for emotion recognition
+    # https://librosa.org/doc/main/generated/librosa.feature.delta.html
+    if use_mfcc_deltas:
+        mfcc_delta = librosa.feature.delta(mfcc)
+        mfcc_delta2 = librosa.feature.delta(mfcc, order=2)
+        # print("MFCC Delta:", mfcc_delta.shape)
+        # print("MFCC Delta2:", mfcc_delta2.shape)
 
-        if draw_graphs:
-            # Create image
-            # https://github.com/edgeimpulse/processing-blocks/blob/master/mfcc/dsp.py
-            fig, ax = plt.subplots()
-            fig.set_size_inches(18.5, 20.5)
-            ax.set_axis_off()
-            # img = librosa.display.specshow(chroma,
-            #                                y_axis='log',
-            #                                x_axis='time',
-            #                                ax=ax)
-            # fig.colorbar(img, ax=ax)
-            # ax.label_outer()
-            cax = ax.imshow(chroma,
-                            interpolation='nearest',
-                            cmap=cm.coolwarm,
-                            origin='lower')
-
-            buf = io.BytesIO()
-            plt.savefig(buf, format='svg', bbox_inches='tight', pad_inches=0)
-            buf.seek(0)
-            image = (base64.b64encode(buf.getvalue()).decode('ascii'))
-            buf.close()
-
-            graphs.append({
-                'name': 'Chroma Spectrogram',
-                'image': image,
-                'imageMimeType': 'image/svg+xml',
-                'type': 'image'
-            })
+        features = np.vstack((features, mfcc_delta, mfcc_delta2))
 
     # Zero Crossing Rate
     # https://librosa.org/doc/main/generated/librosa.feature.zero_crossing_rate.html
@@ -90,17 +133,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         zcr = librosa.feature.zero_crossing_rate(y=raw_data)
         # print("ZCR:", zcr.shape)
 
-        features = np.vstack((features, zcr)) \
-            if features is not None else zcr
-
-        if draw_graphs:
-            graphs.append({
-                'name': 'Zero Crossing Rate',
-                'X': {
-                    axes[0]: np.arange(0, zcr.shape[1]).tolist()
-                },
-                'y': zcr.flatten().tolist(),
-            })
+        features = np.vstack((features, zcr))
 
     # Root Mean Square
     # https://librosa.org/doc/main/generated/librosa.feature.rms.html
@@ -108,17 +141,35 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         rms = librosa.feature.rms(y=raw_data)
         # print("RMS:", rms.shape)
 
-        features = np.vstack((features, rms)) \
-            if features is not None else rms
+        features = np.vstack((features, rms))
 
-        if draw_graphs:
-            graphs.append({
-                'name': 'Root Mean Square',
-                'X': {
-                    axes[0]: np.arange(0, rms.shape[1]).tolist()
-                },
-                'y': rms.flatten().tolist(),
-            })
+    # Initialize graphs
+    graphs = []
+
+    # Display graphs
+    if draw_graphs:
+        # Create image
+        # https://github.com/edgeimpulse/processing-blocks/blob/master/mfcc/dsp.py
+        fig, ax = plt.subplots()
+        fig.set_size_inches(18.5, 20.5)
+        ax.set_axis_off()
+        cax = ax.imshow(features,
+                        interpolation='nearest',
+                        cmap=cm.coolwarm,
+                        origin='lower')
+
+        buf = io.BytesIO()
+        plt.savefig(buf, format='svg', bbox_inches='tight', pad_inches=0)
+        buf.seek(0)
+        image = (base64.b64encode(buf.getvalue()).decode('ascii'))
+        buf.close()
+
+        graphs.append({
+            'name': 'Feature Vector',
+            'image': image,
+            'imageMimeType': 'image/svg+xml',
+            'type': 'image'
+        })
 
     print("Features:", features.shape)
 
