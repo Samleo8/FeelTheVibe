@@ -33,3 +33,6 @@ echo $PID > server.pid
 
 # Kill old processes
 trap kill_old_procs SIGINT
+
+# Tail the log file
+tail -F $BLOCK/dsp_server.log
