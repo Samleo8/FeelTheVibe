@@ -253,8 +253,8 @@ if __name__ == "__main__":
                                   no_mean_mfcc=True,
                                   use_zcr=False,
                                   use_rms=False,
-                                  use_spec_centroid=True,
-                                  use_spec_rolloff=True)
+                                  use_spec_centroid=False,
+                                  use_spec_rolloff=False)
 
     if save_img:
         imgdata = base64.b64decode(info_dict['graphs'][0]['image'])
