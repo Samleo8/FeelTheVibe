@@ -47,7 +47,7 @@
                     "type": "boolean",
                     "help": "Use first and second derivatives for MFCC, preferred for emotion detection",
                     "param": "use_mfcc_deltas"
-                },
+                }
             ]
         },
         {
