@@ -104,6 +104,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     frame_len = int(MS_TO_S * frame_len_ms * sampling_freq)
     hop_len = int(MS_TO_S * hop_len_ms * sampling_freq)
 
+    print("Generating with LPC order", lpc_order, "with", num_lpcc, "LPCC coefficients")
     print("Sample Freq", sampling_freq)
     print("Frame length: ", frame_len_ms, "ms,", frame_len, "samples")
     print("Hop length: ", hop_len_ms, "ms,", hop_len, "samples")
