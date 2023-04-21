@@ -204,7 +204,7 @@ if __name__ == "__main__":
     save_img = bool(int(sys.argv[1])) if len(sys.argv) > 1 else False
 
     info_dict = generate_features(implementation_version=1,
-                      draw_graphs=False,
+                      draw_graphs=save_img,
                       raw_data=raw_data,
                       axes=[0, 1, 2],
                       sampling_freq=16000,
