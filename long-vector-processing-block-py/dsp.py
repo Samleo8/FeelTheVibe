@@ -159,7 +159,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         fig, ax = plt.subplots()
         fig.set_size_inches(18.5, 20.5)
         ax.set_axis_off()
-        cax = ax.imshow(features,
+        cax = ax.imshow(features.T,
                         interpolation='nearest',
                         cmap=cm.coolwarm,
                         origin='lower')
