@@ -77,7 +77,7 @@ def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     return lpcc
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
-                      sampling_freq, lpc_order, num_lpcc, frame_len_ms, hop_len_ms):
+                      sampling_freq, frame_len_ms, hop_len_ms, lpc_order, num_lpcc):
     '''
     Generate series of features from raw data
 
@@ -97,7 +97,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
     # Split into frames
     # https://stackoverflow.com/a/66921909
-    # NOTE: Now a parameter. Default values based on paper
+    # NOTE: Frame length and stride now a parameter. Default values based on paper
 
     # Convert frame length in ms to n_samples, using sampling frequency
     MS_TO_S = 1 / 1000
