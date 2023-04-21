@@ -5,6 +5,8 @@ kill_old_procs(){
     if [ -f server.pid ]; then
         kill $(cat server.pid)
     fi
+
+    fuser -k $1/tcp
 }
 
 # Ports
@@ -18,7 +20,7 @@ BLOCK="${BLOCK_NAME}${BLOCK_POSTFIX}"
 
 # Kill any old processes
 git pull
-kill_old_procs
+kill_old_procs $PORT
 
 # Start server
 cd $BLOCK
