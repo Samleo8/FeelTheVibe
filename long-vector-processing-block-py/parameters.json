@@ -1,10 +1,10 @@
 {
     "version": 1,
     "info": {
-        "title": "Non-MFCC Features",
+        "title": "Long Vector of Features",
         "author": "Samuel Leong",
-        "description": "Generating non-MFCC features, including Chroma, ZCR, RMS, etc.",
-        "name": "Non-MFCC Features",
+        "description": "Generating MFCC + LPCC features, and others including Chroma, ZCR, RMS, etc.",
+        "name": "Long Vector of Features",
         "cppType": "custom_block",
         "preferConvolution": false,
         "visualization": "dimensionalityReduction",
@@ -32,18 +32,30 @@
             ]
         },
         {
+            "group": "MFCC",
+            "items": [
+                {
+                    "name": "Number of MFCC Coefficients",
+                    "value": 13,
+                    "type": "int",
+                    "help": "Number of MFCC coefficients to use.",
+                    "param": "num_mfcc"
+                },
+                {
+                    "name": "Use First and Second Derivatives",
+                    "value": true,
+                    "type": "boolean",
+                    "help": "Use first and second derivatives for MFCC, preferred for emotion detection",
+                    "param": "use_mfcc_deltas"
+                },
+            ]
+        },
+        {
             "group": "Other Features to Include",
             "items": [
                 {
-                    "name": "Chroma",
-                    "value": true,
-                    "type": "boolean",
-                    "help": "Whether to include Chroma STFT",
-                    "param": "use_chroma"
-                },
-                {
                     "name": "ZCR",
-                    "value": true,
+                    "value": false,
                     "type": "boolean",
                     "help": "Whether to include zero-crossing rate",
                     "param": "use_zcr"
@@ -54,6 +66,20 @@
                     "type": "boolean",
                     "help": "Whether to include root-mean-square",
                     "param": "use_rms"
+                },
+                {
+                    "name": "Spectral Centroid",
+                    "value": false,
+                    "type": "boolean",
+                    "help": "Whether to include spectral centroid",
+                    "param": "use_spec_centroid"
+                },
+                {
+                    "name": "Spectral Roll Off",
+                    "value": false,
+                    "type": "boolean",
+                    "help": "Whether to include spectral rolloff",
+                    "param": "use_spec_rolloff"
                 }
             ]
         }

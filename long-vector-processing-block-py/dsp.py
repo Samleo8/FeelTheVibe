@@ -13,18 +13,20 @@ def soundDataToFloat(data):
 
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
-                      sampling_freq, lpc_order, num_lpcc, use_chroma, use_zcr, use_rms):
+                      sampling_freq, lpc_order, num_lpcc, num_mfcc,
+                      use_mfcc_deltas, use_zcr, use_rms, use_spec_centroid,
+                      use_spec_rolloff):
     '''
     Generate series of features from raw data
 
-    Features from:
-    https://www.kaggle.com/code/shivamburnwal/speech-emotion-recognition?scriptVersionId=34958802&cellId=40
+    Subset of Features from:
+    https://www.mdpi.com/2079-9292/12/4/839
     '''
     # Convert raw WAV files in int16 form to float
     raw_data = soundDataToFloat(raw_data)
     sample_rate = sampling_freq
 
-    assert lpc_order > 0 or use_chroma or use_zcr or use_rms, "At least one feature must be selected"
+    assert lpc_order > 0, "At least one feature must be selected"
     assert num_lpcc >= lpc_order + 1, "Number of LPCC coefficients must be larger than LPC filter order + 1"
 
     # Initialize empty features
@@ -139,18 +141,17 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         }
     }
 
+
 if __name__ == "__main__":
     raw_data = np.loadtxt("./test_data.txt", dtype=np.int16)
 
-    generate_features(
-        implementation_version=1,
-        draw_graphs=False,
-        raw_data=raw_data,
-        axes=[0,1,2],
-        sampling_freq=16000,
-        num_lpcc=17,
-        lpc_order=0,
-        use_chroma=True,
-        use_zcr=True,
-        use_rms=False
-    )
+    generate_features(implementation_version=1,
+                      draw_graphs=False,
+                      raw_data=raw_data,
+                      axes=[0, 1, 2],
+                      sampling_freq=16000,
+                      num_lpcc=17,
+                      lpc_order=0,
+                      use_chroma=True,
+                      use_zcr=True,
+                      use_rms=False)
