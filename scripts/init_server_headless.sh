@@ -24,6 +24,7 @@ kill_old_procs $PORT
 
 # Start server
 cd $BLOCK
+echo "">dsp_server.log
 PORT=$PORT python3 dsp-server.py &> dsp_server.log &
 PID=$!
 cd ..
