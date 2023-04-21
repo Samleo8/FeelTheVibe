@@ -160,23 +160,23 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
         features = np.hstack((features, rms))
 
-    features = np.array(features)[:, np.newaxis]
-
     # Spectral Centroid
     # https://librosa.org/doc/main/generated/librosa.feature.spectral_centroid.html
     if use_spec_centroid:
-        spec_centroid = librosa.feature.spectral_centroid(y=raw_data, sr=sample_rate)
-        # print("Spectral Centroid:", spec_centroid.shape)
+        spec_centroid = librosa.feature.spectral_centroid(y=raw_data, sr=sample_rate).flatten()
+        print("Spectral Centroid:", spec_centroid.shape)
 
         features = np.hstack((features, spec_centroid))
 
     # Spectral Rolloff
     # https://librosa.org/doc/main/generated/librosa.feature.spectral_rolloff.html
     if use_spec_rolloff:
-        spec_rolloff = librosa.feature.spectral_rolloff(y=raw_data, sr=sample_rate)
-        # print("Spectral Rolloff:", spec_rolloff.shape)
+        spec_rolloff = librosa.feature.spectral_rolloff(y=raw_data, sr=sample_rate).mean()
+        print("Spectral Rolloff:", spec_rolloff.shape)
 
         features = np.hstack((features, spec_rolloff))
+
+    features = np.array(features)[:, np.newaxis]
 
     # Initialize graphs
     graphs = []
@@ -253,8 +253,8 @@ if __name__ == "__main__":
                                   no_mean_mfcc=True,
                                   use_zcr=False,
                                   use_rms=False,
-                                  use_spec_centroid=False,
-                                  use_spec_rolloff=False)
+                                  use_spec_centroid=True,
+                                  use_spec_rolloff=True)
 
     if save_img:
         imgdata = base64.b64decode(info_dict['graphs'][0]['image'])
