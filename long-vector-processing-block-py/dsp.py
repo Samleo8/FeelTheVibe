@@ -1,5 +1,6 @@
 import base64
 import io
+import sys
 import numpy as np
 import librosa
 import matplotlib.pyplot as plt
@@ -25,6 +26,8 @@ def get_lpc_error(signal, lpc_coeffcients):
     '''
     n_frames, n_samples = signal.shape
     _, n_filter_order = lpc_coeffcients.shape
+
+    # print(n_frames, n_samples, n_filter_order)
 
     # Calculate autocorrelation
     autocorr = librosa.autocorrelate(signal, max_size=n_filter_order)
@@ -59,7 +62,7 @@ def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
     # For extended LPCC, pad with zeros
     lpc_coeffcients_extend = np.hstack(
         (lpc_coeffcients, np.zeros((n_frames, num_lpcc - n_filter_order))))
-    print("lpc_coeffcients_extend shape: ", lpc_coeffcients_extend.shape)
+    # print("lpc_coeffcients_extend shape: ", lpc_coeffcients_extend.shape)
 
     for m in range(1, num_lpcc):
         # NOTE: Take advantage of the fact that until next iteration, rest of lpcc part is 0
@@ -99,22 +102,23 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
     ##======LPCC=====##
     # LPC
-    lpc = librosa.lpc(raw_data, order=lpc_order)
+    lpc = librosa.lpc(raw_data, order=lpc_order)[:, np.newaxis].T
 
     # LPCC Calculation
     # TODO: Need to check error calculation
-    error = get_lpc_error(raw_data, lpc)
-    lpcc = lpc_to_lpcc(lpc, error, num_lpcc)
-    # print("LPCC:", lpcc.shape)
+    error = get_lpc_error(raw_data[:, np.newaxis].T, lpc)
+    lpcc = lpc_to_lpcc(lpc, error, num_lpcc).flatten()
+    print("LPCC:", lpcc.shape)
 
-    features = np.vstack((features, lpcc))
+    features = np.copy(lpcc)
 
     ##======MFCC=====##
     # MFCC
     # https://librosa.org/doc/main/generated/librosa.feature.mfcc.html
-    mfcc = librosa.feature.mfcc(y=raw_data, sr=sample_rate, n_mfcc=num_mfcc)
-    features = np.vstack((features, mfcc))
-    # print("MFCC:", mfcc.shape)
+    mfcc = librosa.feature.mfcc(y=raw_data, sr=sample_rate, n_mfcc=num_mfcc).mean(axis=1)
+    print("MFCC:", mfcc.shape)
+
+    features = np.hstack((features, mfcc))
 
     # MFCC Delta
     # NOTE: Apparently important for emotion recognition
@@ -125,7 +129,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         # print("MFCC Delta:", mfcc_delta.shape)
         # print("MFCC Delta2:", mfcc_delta2.shape)
 
-        features = np.vstack((features, mfcc_delta, mfcc_delta2))
+        features = np.hstack((features, mfcc_delta, mfcc_delta2))
 
     # Zero Crossing Rate
     # https://librosa.org/doc/main/generated/librosa.feature.zero_crossing_rate.html
@@ -133,7 +137,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         zcr = librosa.feature.zero_crossing_rate(y=raw_data)
         # print("ZCR:", zcr.shape)
 
-        features = np.vstack((features, zcr))
+        features = np.hstack((features, zcr))
 
     # Root Mean Square
     # https://librosa.org/doc/main/generated/librosa.feature.rms.html
@@ -141,7 +145,9 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         rms = librosa.feature.rms(y=raw_data)
         # print("RMS:", rms.shape)
 
-        features = np.vstack((features, rms))
+        features = np.hstack((features, rms))
+
+    features = np.array(features)[:, np.newaxis]
 
     # Initialize graphs
     graphs = []
@@ -195,14 +201,25 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
 if __name__ == "__main__":
     raw_data = np.loadtxt("./test_data.txt", dtype=np.int16)
+    save_img = bool(int(sys.argv[1])) if len(sys.argv) > 1 else False
 
-    generate_features(implementation_version=1,
+    info_dict = generate_features(implementation_version=1,
                       draw_graphs=False,
                       raw_data=raw_data,
                       axes=[0, 1, 2],
                       sampling_freq=16000,
-                      num_lpcc=17,
-                      lpc_order=0,
-                      use_chroma=True,
-                      use_zcr=True,
-                      use_rms=False)
+                      lpc_order=10,
+                      num_lpcc=13,
+                      num_mfcc=13,
+                      use_mfcc_deltas=True,
+                      use_zcr=False,
+                      use_rms=False,
+                      use_spec_centroid=False,
+                      use_spec_rolloff=False)
+
+    if save_img:
+        imgdata = base64.b64decode(info_dict['graphs'][0]['image'])
+        filename = 'test_data_lpcc.jpg'
+        with open(filename, 'wb') as f:
+            f.write(imgdata)
+        print("Saved image representation of Long Vector features to ", filename)
