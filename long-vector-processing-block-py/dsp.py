@@ -84,7 +84,7 @@ def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, lpc_order, num_lpcc, num_mfcc,
-                      use_mfcc_deltas, use_zcr, use_rms, use_spec_centroid,
+                      use_mfcc_deltas, no_mean_mfcc, use_zcr, use_rms, use_spec_centroid,
                       use_spec_rolloff):
     '''
     Generate series of features from raw data
@@ -115,11 +115,10 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     ##======MFCC=====##
     # MFCC
     # https://librosa.org/doc/main/generated/librosa.feature.mfcc.html
-    mfcc = librosa.feature.mfcc(y=raw_data, sr=sample_rate, n_mfcc=num_mfcc).mean(axis=1)
+    mfcc = librosa.feature.mfcc(y=raw_data, sr=sample_rate, n_mfcc=num_mfcc)
+    
     print("MFCC:", mfcc.shape)
-
-    features = np.hstack((features, mfcc))
-
+    
     # MFCC Delta
     # NOTE: Apparently important for emotion recognition
     # https://librosa.org/doc/main/generated/librosa.feature.delta.html
@@ -129,6 +128,15 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         # print("MFCC Delta:", mfcc_delta.shape)
         # print("MFCC Delta2:", mfcc_delta2.shape)
 
+    # TODO: Do we mean the MFCC before or after delta?
+    if not no_mean_mfcc:
+        mfcc = mfcc.mean(axis=1)
+        if use_mfcc_deltas:
+            mfcc_delta = mfcc_delta.mean(axis=1)
+            mfcc_delta2 = mfcc_delta2.mean(axis=1)
+
+    features = np.hstack((features, mfcc))
+    if use_mfcc_deltas:
         features = np.hstack((features, mfcc_delta, mfcc_delta2))
 
     # Zero Crossing Rate
@@ -212,6 +220,7 @@ if __name__ == "__main__":
                       num_lpcc=13,
                       num_mfcc=13,
                       use_mfcc_deltas=True,
+                      no_mean_mfcc=False,
                       use_zcr=False,
                       use_rms=False,
                       use_spec_centroid=False,

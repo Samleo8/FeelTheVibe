@@ -47,6 +47,13 @@
                     "type": "boolean",
                     "help": "Use first and second derivatives for MFCC, preferred for emotion detection",
                     "param": "use_mfcc_deltas"
+                },
+                {
+                    "name": "Use all MFCC information",
+                    "value": false,
+                    "type": "boolean",
+                    "help": "Instead of taking the mean, flatten and use all the information from the MFCC vector",
+                    "param": "no_mean_mfcc"
                 }
             ]
         },
