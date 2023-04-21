@@ -162,6 +162,22 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
 
     features = np.array(features)[:, np.newaxis]
 
+    # Spectral Centroid
+    # https://librosa.org/doc/main/generated/librosa.feature.spectral_centroid.html
+    if use_spec_centroid:
+        spec_centroid = librosa.feature.spectral_centroid(y=raw_data, sr=sample_rate)
+        # print("Spectral Centroid:", spec_centroid.shape)
+
+        features = np.hstack((features, spec_centroid))
+
+    # Spectral Rolloff
+    # https://librosa.org/doc/main/generated/librosa.feature.spectral_rolloff.html
+    if use_spec_rolloff:
+        spec_rolloff = librosa.feature.spectral_rolloff(y=raw_data, sr=sample_rate)
+        # print("Spectral Rolloff:", spec_rolloff.shape)
+
+        features = np.hstack((features, spec_rolloff))
+
     # Initialize graphs
     graphs = []
 
@@ -172,7 +188,16 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         fig, ax = plt.subplots()
         fig.set_size_inches(18.5, 20.5)
         ax.set_axis_off()
-        cax = ax.imshow(features.T,
+
+        if (num_mfcc == num_lpcc) and not (use_rms or use_zcr or use_spec_centroid or use_spec_rolloff):
+            # MFCC and LPCC are the same size
+            # can reshape to 2D array for easier viewing
+            features = features.reshape(num_mfcc, -1)
+        else:
+            # Otherwise, just transpose
+            features = features.T
+
+        cax = ax.imshow(features,
                         interpolation='nearest',
                         cmap=cm.coolwarm,
                         origin='lower')
@@ -190,7 +215,7 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
             'type': 'image'
         })
 
-    print("Features:", features.shape)
+    print("Features:", features.shape, features.dtype)
 
     return {
         'features': features.flatten().tolist(),
