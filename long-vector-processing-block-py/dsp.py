@@ -134,6 +134,11 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         if use_mfcc_deltas:
             mfcc_delta = mfcc_delta.mean(axis=1)
             mfcc_delta2 = mfcc_delta2.mean(axis=1)
+    else:
+        mfcc = mfcc.flatten()
+        if use_mfcc_deltas:
+            mfcc_delta = mfcc_delta.flatten()
+            mfcc_delta2 = mfcc_delta2.flatten()
 
     features = np.hstack((features, mfcc))
     if use_mfcc_deltas:
@@ -220,7 +225,7 @@ if __name__ == "__main__":
                                   num_lpcc=13,
                                   num_mfcc=13,
                                   use_mfcc_deltas=True,
-                                  no_mean_mfcc=False,
+                                  no_mean_mfcc=True,
                                   use_zcr=False,
                                   use_rms=False,
                                   use_spec_centroid=False,
