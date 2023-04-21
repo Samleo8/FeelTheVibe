@@ -84,8 +84,8 @@ def lpc_to_lpcc(lpc_coeffcients, error, num_lpcc):
 
 def generate_features(implementation_version, draw_graphs, raw_data, axes,
                       sampling_freq, lpc_order, num_lpcc, num_mfcc,
-                      use_mfcc_deltas, no_mean_mfcc, use_zcr, use_rms, use_spec_centroid,
-                      use_spec_rolloff):
+                      use_mfcc_deltas, no_mean_mfcc, use_zcr, use_rms,
+                      use_spec_centroid, use_spec_rolloff):
     '''
     Generate series of features from raw data
 
@@ -116,9 +116,9 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
     # MFCC
     # https://librosa.org/doc/main/generated/librosa.feature.mfcc.html
     mfcc = librosa.feature.mfcc(y=raw_data, sr=sample_rate, n_mfcc=num_mfcc)
-    
+
     print("MFCC:", mfcc.shape)
-    
+
     # MFCC Delta
     # NOTE: Apparently important for emotion recognition
     # https://librosa.org/doc/main/generated/librosa.feature.delta.html
@@ -134,6 +134,11 @@ def generate_features(implementation_version, draw_graphs, raw_data, axes,
         if use_mfcc_deltas:
             mfcc_delta = mfcc_delta.mean(axis=1)
             mfcc_delta2 = mfcc_delta2.mean(axis=1)
+    else:
+        mfcc = mfcc.flatten()
+        if use_mfcc_deltas:
+            mfcc_delta = mfcc_delta.flatten()
+            mfcc_delta2 = mfcc_delta2.flatten()
 
     features = np.hstack((features, mfcc))
     if use_mfcc_deltas:
@@ -212,23 +217,24 @@ if __name__ == "__main__":
     save_img = bool(int(sys.argv[1])) if len(sys.argv) > 1 else False
 
     info_dict = generate_features(implementation_version=1,
-                      draw_graphs=save_img,
-                      raw_data=raw_data,
-                      axes=[0, 1, 2],
-                      sampling_freq=16000,
-                      lpc_order=10,
-                      num_lpcc=13,
-                      num_mfcc=13,
-                      use_mfcc_deltas=True,
-                      no_mean_mfcc=False,
-                      use_zcr=False,
-                      use_rms=False,
-                      use_spec_centroid=False,
-                      use_spec_rolloff=False)
+                                  draw_graphs=save_img,
+                                  raw_data=raw_data,
+                                  axes=[0, 1, 2],
+                                  sampling_freq=16000,
+                                  lpc_order=10,
+                                  num_lpcc=13,
+                                  num_mfcc=13,
+                                  use_mfcc_deltas=True,
+                                  no_mean_mfcc=False,
+                                  use_zcr=False,
+                                  use_rms=False,
+                                  use_spec_centroid=False,
+                                  use_spec_rolloff=False)
 
     if save_img:
         imgdata = base64.b64decode(info_dict['graphs'][0]['image'])
         filename = 'test_data_lpcc.jpg'
         with open(filename, 'wb') as f:
             f.write(imgdata)
-        print("Saved image representation of Long Vector features to ", filename)
+        print("Saved image representation of Long Vector features to ",
+              filename)
