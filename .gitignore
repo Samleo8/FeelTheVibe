@@ -12,6 +12,7 @@ dsp_server.log
 *.tar.xz
 *.tar.bz2
 *.wav
+*.mp4
 
 # Prerequisites
 *.d
