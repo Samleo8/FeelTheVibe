@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 
 static const float features[] = {
     // copy raw features here (for example from the 'Live classification' page)

@@ -44,7 +44,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include <PDM.h>
 
 /** Audio buffers, pointers and selectors */

@@ -28,6 +28,7 @@
  * For more info: https://docs.edgeimpulse.com/docs/continuous-audio-sampling
  */
 #define EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW 4
+// TODO: Figure out the right number here
 
 /*
  ** NOTE: If you run into TFLite arena allocation issue.
@@ -46,7 +47,8 @@
 
 /* Includes ---------------------------------------------------------------- */
 #include <PDM.h>
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+// #include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 
 /** Audio buffers, pointers and selectors */
 typedef struct {
@@ -134,14 +136,19 @@ void loop()
                       result.classification[ix].value);
         }
 
+        // apply a Kalman filter and thresholding
+        const float KALMAN_COEFF = 0.5;
+        const float INTENSE_THRESH = 0.8;
+        const float MEH_THRESH = 0.8;
+
         float intense = result.classification[0].value;
-        intensePersist = 0.5*intensePersist + intense*0.5;
-        if (intensePersist > 0.8) digitalWrite(RED, LOW);
+        intensePersist = KALMAN_COEFF * intensePersist + intense * (1 - KALMAN_COEFF);
+        if (intensePersist > INTENSE_THRESH) digitalWrite(RED, LOW);
         else digitalWrite(RED, HIGH);
         
         float meh = result.classification[1].value;
-        mehPersist = 0.5*mehPersist + meh * 0.5;
-        if (mehPersist > 0.8) digitalWrite(BLUE, LOW);
+        mehPersist = KALMAN_COEFF * mehPersist + meh * (1 - KALMAN_COEFF);
+        if (mehPersist > MEH_THRESH) digitalWrite(BLUE, LOW);
         else digitalWrite(BLUE, HIGH);
 
         ei_printf("        Filtered: Intense %.5f Meh %.5f\n", intensePersist, mehPersist);

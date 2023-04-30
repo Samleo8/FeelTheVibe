@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include <Arduino_LSM9DS1.h> //Click here to get the library: http://librarymanager/All#Arduino_LSM9DS1
 #include <Arduino_LPS22HB.h> //Click here to get the library: http://librarymanager/All#Arduino_LPS22HB
 #include <Arduino_HTS221.h> //Click here to get the library: http://librarymanager/All#Arduino_HTS221

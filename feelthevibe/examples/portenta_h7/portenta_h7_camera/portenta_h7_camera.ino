@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include "camera.h"
 #include "himax.h"
 #include "edge-impulse-sdk/dsp/image/image.hpp"

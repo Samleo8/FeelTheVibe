@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include <Arduino_LSM6DSOX.h> //Click here to get the library: http://librarymanager/All#Arduino_LSM6DSOX
 
 enum sensor_status {

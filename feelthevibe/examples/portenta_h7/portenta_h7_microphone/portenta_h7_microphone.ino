@@ -34,7 +34,7 @@
 
 /* Includes ---------------------------------------------------------------- */
 #include <PDM.h>
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 
 /** Audio buffers, pointers and selectors */
 typedef struct {

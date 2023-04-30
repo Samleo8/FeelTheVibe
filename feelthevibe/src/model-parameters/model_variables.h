@@ -31,32 +31,30 @@
 
 const char* ei_classifier_inferencing_categories[] = { "intense", "meh" };
 
-uint8_t ei_dsp_config_40_axes[] = { 0 };
-const uint32_t ei_dsp_config_40_axes_size = 1;
-ei_dsp_config_mfcc_t ei_dsp_config_40 = {
-    40, // uint32_t blockId
+uint8_t ei_dsp_config_46_axes[] = { 0 };
+const uint32_t ei_dsp_config_46_axes_size = 1;
+ei_dsp_config_mfe_t ei_dsp_config_46 = {
+    46, // uint32_t blockId
     4, // int implementationVersion
     1, // int length of axes
-    13, // int num_cepstral
-    0.5f, // float frame_length
-    0.02f, // float frame_stride
-    32, // int num_filters
+    0.02f, // float frame_length
+    0.01f, // float frame_stride
+    40, // int num_filters
     256, // int fft_length
-    101, // int win_size
     0, // int low_frequency
     0, // int high_frequency
-    0.98f, // float pre_cof
-    1 // int pre_shift
+    101, // int win_size
+    -52 // int noise_floor_db
 };
 
 const size_t ei_dsp_blocks_size = 1;
 ei_model_dsp_t ei_dsp_blocks[ei_dsp_blocks_size] = {
-    { // DSP block 40
-        2288,
-        &extract_mfcc_features,
-        (void*)&ei_dsp_config_40,
-        ei_dsp_config_40_axes,
-        ei_dsp_config_40_axes_size
+    { // DSP block 46
+        7960,
+        &extract_mfe_features,
+        (void*)&ei_dsp_config_46,
+        ei_dsp_config_46_axes,
+        ei_dsp_config_46_axes_size
     }
 };
 
@@ -98,16 +96,16 @@ const ei_model_performance_calibration_t ei_calibration = {
 };
 
 
-const ei_impulse_t impulse_214436_8 = {
-    .project_id = 214436,
+const ei_impulse_t impulse_217622_12 = {
+    .project_id = 217622,
     .project_owner = "Samuel",
-    .project_name = "FeelTheVibeIntenseMFCC",
-    .deploy_version = 8,
+    .project_name = "FeelTheVibeIntenseShorter",
+    .deploy_version = 12,
 
-    .nn_input_frame_size = 2288,
-    .raw_sample_count = 64000,
+    .nn_input_frame_size = 7960,
+    .raw_sample_count = 32000,
     .raw_samples_per_frame = 1,
-    .dsp_input_frame_size = 64000 * 1,
+    .dsp_input_frame_size = 32000 * 1,
     .input_width = 0,
     .input_height = 0,
     .input_frames = 0,
@@ -134,7 +132,7 @@ const ei_impulse_t impulse_214436_8 = {
 
     .sensor = EI_CLASSIFIER_SENSOR_MICROPHONE,
     .fusion_string = "audio",
-    .slice_size = (64000/4),
+    .slice_size = (32000/4),
     .slices_per_model_window = 4,
 
     .has_anomaly = 0,
@@ -143,6 +141,6 @@ const ei_impulse_t impulse_214436_8 = {
     .categories = ei_classifier_inferencing_categories
 };
 
-const ei_impulse_t ei_default_impulse = impulse_214436_8;
+const ei_impulse_t ei_default_impulse = impulse_217622_12;
 
 #endif // _EI_CLASSIFIER_MODEL_METADATA_H_

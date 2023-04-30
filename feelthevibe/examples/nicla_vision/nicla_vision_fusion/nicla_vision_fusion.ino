@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include <Arduino_LSM6DSOX.h> //Click here to get the library: http://librarymanager/All#Arduino_LSM6DSOX
 #include "VL53L1X.h" //Click here to get the library (VL53L1X from Pololu): http://librarymanager/All#VL53L1X
 

@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include "Arduino_BHY2.h" //Click here to get the library: http://librarymanager/All#Arduino_BHY2
 
 /** Struct to link sensor axis name to sensor value function */

@@ -39,7 +39,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"

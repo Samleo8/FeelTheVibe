@@ -15,7 +15,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include <Arduino_OV767X.h> //Click here to get the library: http://librarymanager/All#Arduino_OV767X
 
 #include <stdint.h>

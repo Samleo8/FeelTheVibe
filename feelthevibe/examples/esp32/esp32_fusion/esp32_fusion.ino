@@ -21,7 +21,7 @@
  */
 
 /* Includes ---------------------------------------------------------------- */
-#include <FeelTheVibeIntenseMFCC_inferencing.h>
+#include <FeelTheVibeIntenseShorter_inferencing.h>
 #include <LIS3DHTR.h> //Click here to get the library: http://librarymanager/All#LIS3DHTR
 #include <Wire.h>
 
