@@ -18,6 +18,8 @@
 #define BLUE 24     
 #define GREEN 23
 #define LED_PWR 25
+#define NEO_PIN 5
+#define NUMPIXELS 16
 
 // If your target is limited in memory remove this macro to save 10K RAM
 #define EIDSP_QUANTIZE_FILTERBANK   0
@@ -47,8 +49,10 @@
 
 /* Includes ---------------------------------------------------------------- */
 #include <PDM.h>
+#include <Adafruit_NeoPixel.h>
 // #include <FeelTheVibeIntenseMFCC_inferencing.h>
 #include <FeelTheVibeIntenseShorter_inferencing.h>
+
 
 /** Audio buffers, pointers and selectors */
 typedef struct {
@@ -68,6 +72,8 @@ static int print_results = -(EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW);
 static float intensePersist = 0.0f;
 static float mehPersist = 0.0f;
 
+static Adafruit_NeoPixel pixels(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
+
 /**
  * @brief      Arduino setup function
  */
@@ -78,6 +84,12 @@ void setup()
     // comment out the below line to cancel the wait for USB connection (needed for native USB)
     while (!Serial);
     Serial.println("Edge Impulse Inferencing Demo");
+    pixels.begin();
+
+//    for (int i = 0; i < 16; i++) {
+//      pixels.setPixelColor(i, pixels.Color(0, i*15, 0));
+//    }
+//    pixels.show();
 
     // summary of inferencing settings (from model_metadata.h)
     ei_printf("Inferencing settings:\n");
@@ -138,18 +150,30 @@ void loop()
 
         // apply a Kalman filter and thresholding
         const float KALMAN_COEFF = 0.5;
-        const float INTENSE_THRESH = 0.8;
-        const float MEH_THRESH = 0.8;
+        const float INTENSE_THRESH = 0.5;
+        const float MEH_THRESH = 0.7;
+
+        const float LED_BRIGHTNESS = 0.3;
 
         float intense = result.classification[0].value;
         intensePersist = KALMAN_COEFF * intensePersist + intense * (1 - KALMAN_COEFF);
-        if (intensePersist > INTENSE_THRESH) digitalWrite(RED, LOW);
-        else digitalWrite(RED, HIGH);
         
         float meh = result.classification[1].value;
         mehPersist = KALMAN_COEFF * mehPersist + meh * (1 - KALMAN_COEFF);
-        if (mehPersist > MEH_THRESH) digitalWrite(BLUE, LOW);
-        else digitalWrite(BLUE, HIGH);
+
+        int num_red = (intensePersist - INTENSE_THRESH) / (1 - INTENSE_THRESH) * (NUMPIXELS / 2);
+        int num_blue = (mehPersist - MEH_THRESH) / (1 - MEH_THRESH) * (NUMPIXELS / 2);
+        for (int i = 0; i < 8; i++) {
+          if (i < num_red) pixels.setPixelColor(i, pixels.Color(LED_BRIGHTNESS * 255, 0, 0));
+          else pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+        }
+
+        for (int i = 0; i < 8; i++) {
+          if (i < num_blue) pixels.setPixelColor(NUMPIXELS - 1 - i, pixels.Color(0, 0, LED_BRIGHTNESS * 255));
+          else pixels.setPixelColor(NUMPIXELS - 1 - i, pixels.Color(0, 0, 0));
+        }
+
+        pixels.show();
 
         ei_printf("        Filtered: Intense %.5f Meh %.5f\n", intensePersist, mehPersist);
 
