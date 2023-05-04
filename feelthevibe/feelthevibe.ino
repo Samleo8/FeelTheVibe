@@ -72,6 +72,12 @@ static int print_results = -(EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW);
 static float intensePersist = 0.0f;
 static float mehPersist = 0.0f;
 
+const float volumeThreshold = 0.03f;
+const float KALMAN_COEFF = 0.5;
+const float INTENSE_THRESH = 0.5;
+const float MEH_THRESH = 0.7;
+const float LED_BRIGHTNESS = 0.3;
+
 static Adafruit_NeoPixel pixels(NUMPIXELS, NEO_PIN, NEO_GRB + NEO_KHZ800);
 
 /**
@@ -82,14 +88,9 @@ void setup()
     // put your setup code here, to run once:
     Serial.begin(115200);
     // comment out the below line to cancel the wait for USB connection (needed for native USB)
-    while (!Serial);
+//    while (!Serial);
     Serial.println("Edge Impulse Inferencing Demo");
     pixels.begin();
-
-//    for (int i = 0; i < 16; i++) {
-//      pixels.setPixelColor(i, pixels.Color(0, i*15, 0));
-//    }
-//    pixels.show();
 
     // summary of inferencing settings (from model_metadata.h)
     ei_printf("Inferencing settings:\n");
@@ -118,6 +119,8 @@ void setup()
 /**
  * @brief      Arduino main function. Runs the inferencing loop.
  */
+float maxBuffer[EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW] = {0, 0, 0, 0};
+ 
 void loop()
 {
     bool m = microphone_inference_record();
@@ -131,54 +134,74 @@ void loop()
     signal.get_data = &microphone_audio_signal_get_data;
     ei_impulse_result_t result = {0};
 
-    EI_IMPULSE_ERROR r = run_classifier_continuous(&signal, &result, debug_nn);
-    if (r != EI_IMPULSE_OK) {
-        ei_printf("ERR: Failed to run classifier (%d)\n", r);
-        return;
+    for (int i = 0; i < EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW - 1; i++) {
+      maxBuffer[i] = maxBuffer[i+1];
+    }
+    
+    float sliceData[EI_CLASSIFIER_SLICE_SIZE];
+    microphone_audio_signal_get_data(0, EI_CLASSIFIER_SLICE_SIZE, &sliceData[0]);
+    
+    float maxValue = 0;
+    for(int i = 0; i < EI_CLASSIFIER_SLICE_SIZE; i++) {
+      if (sliceData[i] > maxValue) maxValue = sliceData[i];
     }
 
-    if (++print_results >= 1) {
-        // print the predictions
-        ei_printf("Predictions ");
-        ei_printf("(DSP: %d ms., Classification: %d ms., Anomaly: %d ms.)",
-            result.timing.dsp, result.timing.classification, result.timing.anomaly);
-        ei_printf(": \n");
-        for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
-            ei_printf("    %s: %.5f\n", result.classification[ix].label,
-                      result.classification[ix].value);
-        }
+    maxBuffer[EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW - 1] = maxValue;
 
-        // apply a Kalman filter and thresholding
-        const float KALMAN_COEFF = 0.5;
-        const float INTENSE_THRESH = 0.5;
-        const float MEH_THRESH = 0.7;
+    float intense = 0;
+    float meh = 0;
 
-        const float LED_BRIGHTNESS = 0.3;
-
-        float intense = result.classification[0].value;
-        intensePersist = KALMAN_COEFF * intensePersist + intense * (1 - KALMAN_COEFF);
-        
-        float meh = result.classification[1].value;
-        mehPersist = KALMAN_COEFF * mehPersist + meh * (1 - KALMAN_COEFF);
-
-        int num_red = (intensePersist - INTENSE_THRESH) / (1 - INTENSE_THRESH) * (NUMPIXELS / 2);
-        int num_blue = (mehPersist - MEH_THRESH) / (1 - MEH_THRESH) * (NUMPIXELS / 2);
-        for (int i = 0; i < 8; i++) {
-          if (i < num_red) pixels.setPixelColor(i, pixels.Color(LED_BRIGHTNESS * 255, 0, 0));
-          else pixels.setPixelColor(i, pixels.Color(0, 0, 0));
-        }
-
-        for (int i = 0; i < 8; i++) {
-          if (i < num_blue) pixels.setPixelColor(NUMPIXELS - 1 - i, pixels.Color(0, 0, LED_BRIGHTNESS * 255));
-          else pixels.setPixelColor(NUMPIXELS - 1 - i, pixels.Color(0, 0, 0));
-        }
-
-        pixels.show();
-
-        ei_printf("        Filtered: Intense %.5f Meh %.5f\n", intensePersist, mehPersist);
-
-        print_results = 0;
+    float avgVolume = 0;
+    for (int i = 0; i < EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW; i++) {
+      avgVolume += maxBuffer[i];
     }
+    avgVolume /= EI_CLASSIFIER_SLICES_PER_MODEL_WINDOW;
+
+    ei_printf("average max volume: %f\n", maxValue);
+
+    if (avgVolume > volumeThreshold) {
+      EI_IMPULSE_ERROR r = run_classifier_continuous(&signal, &result, debug_nn);
+      if (r != EI_IMPULSE_OK) {
+          ei_printf("ERR: Failed to run classifier (%d)\n", r);
+          return;
+      }
+
+      // print the predictions
+//    ei_printf("Predictions ");
+//    ei_printf("(DSP: %d ms., Classification: %d ms., Anomaly: %d ms.)",
+//        result.timing.dsp, result.timing.classification, result.timing.anomaly);
+//    ei_printf(": \n");
+//    for (size_t ix = 0; ix < EI_CLASSIFIER_LABEL_COUNT; ix++) {
+//        ei_printf("    %s: %.5f\n", result.classification[ix].label,
+//                  result.classification[ix].value);
+//    }
+  
+      intense = result.classification[0].value;
+      meh = result.classification[1].value;
+    }
+    
+    
+
+    // apply a Kalman filter and thresholding
+    
+    intensePersist = KALMAN_COEFF * intensePersist + intense * (1 - KALMAN_COEFF);
+    mehPersist = KALMAN_COEFF * mehPersist + meh * (1 - KALMAN_COEFF);
+
+    int num_red = (intensePersist - INTENSE_THRESH) / (1 - INTENSE_THRESH) * (NUMPIXELS / 2);
+    int num_blue = (mehPersist - MEH_THRESH) / (1 - MEH_THRESH) * (NUMPIXELS / 2);
+    for (int i = 0; i < NUMPIXELS / 2; i++) {
+      if (i < num_red) pixels.setPixelColor(i, pixels.Color(LED_BRIGHTNESS * 255, 0, 0));
+      else pixels.setPixelColor(i, pixels.Color(0, 0, 0));
+    }
+
+    for (int i = 0; i < NUMPIXELS / 2; i++) {
+      if (i < num_blue) pixels.setPixelColor(NUMPIXELS - 1 - i, pixels.Color(0, 0, LED_BRIGHTNESS * 255));
+      else pixels.setPixelColor(NUMPIXELS - 1 - i, pixels.Color(0, 0, 0));
+    }
+
+    pixels.show();
+
+    ei_printf("        Filtered: Intense %.5f Meh %.5f\n", intensePersist, mehPersist);
 }
 
 /**
